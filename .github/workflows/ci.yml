@@ -16,11 +16,36 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
+          cache: 'npm'
 
       - run: npm ci
 
       - name: Run lint
         run: npm run lint
+
+
+  unit-test-job:
+    runs-on: ubuntu-latest
+    stratery: 
+      matrix:
+        on: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set node ver 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run lint
+        run: npm run test:unit
+
+
+
+
 
 
 
