@@ -1,9 +1,9 @@
 name: 'deploy to docker'
   
 on:
-    push:
-        tags:
-            - '*'
+  push:
+    branches:
+      - main 
 
 jobs:
   release-docker-image-job:
