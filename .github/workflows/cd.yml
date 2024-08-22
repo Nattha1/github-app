@@ -3,7 +3,7 @@ name: 'deploy'
 on:
     push:
         tags:
-            - '*'
+            - 'v1000'
 
 jobs:
   build-production-job:
@@ -47,4 +47,4 @@ jobs:
             username: ${{ github.actor }}
             reponame: ${{ github.event.repository.name }}
             token: ${{ secrets.GITHUB_TOKEN }}
-            
+

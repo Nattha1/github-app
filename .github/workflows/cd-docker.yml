@@ -1,0 +1,22 @@
+name: 'deploy to docker'
+  
+on:
+    push:
+        tags:
+            - '*'
+
+jobs:
+  release-docker-imags-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build imags and push to github packagas (Docker Registry)
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+            image: ${{ github.event.repository.name }}
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+
