@@ -23,7 +23,7 @@ jobs:
     needs: release-docker-image-job
     runs-on: ubuntu-latest
     env:
-      CONTAINER_NAME: 'natthaphon-vue-app'
+      CONTAINER_NAME: 'natthaphon-app'
       DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.ref_name }}'
     steps:
     - name: Executing remote SSH commands using password
