@@ -14,10 +14,10 @@ jobs:
       - name: Build image and push to GitHub Packages (Docker Registry)
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
-            image: ${{ github.event.repository.name }}
-            registry: ghcr.io
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ github.event.repository.name }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
   auto-deploy-docker-job:
     needs: release-docker-image-job
@@ -34,8 +34,8 @@ jobs:
         password: 'Natthaphon@MUC'
         port: '22'
         script: |
-          sudo docker logout ghcr.io
-          echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          sudo docker rm -f ${{ env.CONTAINER_NAME }} || true
-          sudo docker pull ${{ env.DOCKER_IMAGE_URL }}
-          sudo docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9003:80 ${{ env.DOCKER_IMAGE_URL }}
+          echo ${{ secrets.GITHUB_TOKEN }} | sudo -S docker logout ghcr.io
+          echo ${{ secrets.GITHUB_TOKEN }} | sudo -S docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          sudo -S docker rm -f ${{ env.CONTAINER_NAME }} || true
+          sudo -S docker pull ${{ env.DOCKER_IMAGE_URL }}
+          sudo -S docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9003:80 ${{ env.DOCKER_IMAGE_URL }}
