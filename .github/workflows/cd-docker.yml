@@ -26,16 +26,20 @@ jobs:
       CONTAINER_NAME: 'natthaphon-app'
       DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.ref_name }}'
     steps:
-    - name: Executing remote SSH commands using password
+    - name: Setting up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Executing remote SSH commands
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: '103.91.190.205'  
         username: 'superuser'
-        password: 'Natthaphon@MUC'
         port: '22'
         script: |
-          echo ${{ secrets.GITHUB_TOKEN }} | sudo -S docker logout ghcr.io
-          echo ${{ secrets.GITHUB_TOKEN }} | sudo -S docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          sudo -S docker rm -f ${{ env.CONTAINER_NAME }} || true
-          sudo -S docker pull ${{ env.DOCKER_IMAGE_URL }}
-          sudo -S docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9003:80 ${{ env.DOCKER_IMAGE_URL }}
+          docker logout ghcr.io
+          docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker rm -f ${{ env.CONTAINER_NAME }} || true
+          docker pull ${{ env.DOCKER_IMAGE_URL }}
+          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9003:80 ${{ env.DOCKER_IMAGE_URL }}
