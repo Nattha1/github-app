@@ -1,13 +1,35 @@
-FROM node:18-alpine
+FROM node:18-alpine AS build-stage
 
+# set working directory
 WORKDIR /app
 
-COPY ./ ./
+# copy package.json and package-lock.json to workdir
+COPY package*.json ./
 
+# install app dependencies or npm ci
 RUN npm ci
 
-ENV NODE_ENV=production
+# copy everyting (sourcecode) to docker env (workdir)
+COPY . ./
 
-EXPOSE 3000
+# build production
+RUN npm run build
 
-CMD ["npm", "start"]
+#Stage 2
+FROM nginx:1.25.0-alpine AS production-stage
+
+WORKDIR /usr/share/nginx/html
+
+#remove all default files nginx 
+RUN rm -rf ./*
+
+#copy nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+
+#copy all files and folder (dist) to workdir
+COPY --from=build-stage /app/dist ./
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+
+
+
