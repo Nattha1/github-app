@@ -3,7 +3,7 @@ name: 'deploy to docker'
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   release-docker-image-job:
