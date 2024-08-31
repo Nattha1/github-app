@@ -33,9 +33,10 @@ jobs:
         privateKey: ${{ secrets.MY_PRIVATE_KEY}}
         port: '22'
         script: |
-          docker logout ghcr.io
-          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}
-          docker rm -f ${{ env.CONTAINER_NAME }} || true
-          docker pull ${{ env.DOCKER_IMAGE_URL }}
-          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 8080:80 ${{ env.DOCKER_IMAGE_URL }}
+          sudo docker logout ghcr.io
+          sudo docker login -u Nattha1 -p *** ghcr.io/Nattha1/github-app
+          sudo docker rm -f akenarin2-vue-app || true
+          sudo docker pull ghcr.io/nattha1/github-app:main
+          sudo docker run --restart=always -d --name akenarin2-vue-app -p 9076:80 ghcr.io/nattha1/github-app:main
+
 
