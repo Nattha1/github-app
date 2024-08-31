@@ -30,7 +30,7 @@ jobs:
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: '103.91.190.205'  #production url: 159.223.41.181:9003
+        host: '123.253.62.249'  #production url: 159.223.41.181:9003
         username: 'superuser'
         password: 'Natthaphon@MUC'
         port: '22'
