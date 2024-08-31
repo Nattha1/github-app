@@ -1,48 +1,41 @@
-name: 'CD Pipeline for Web App'
-
+ame: 'deploy to docker'
+  
 on:
   push:
     branches:
       - main
 
 jobs:
-  build-and-save-docker-image:
+  release-docker-image-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: |
-          docker build -t myapp:latest .
-
-      - name: Save Docker image as tar
-        run: |
-          docker save -o myapp.tar myapp:latest
-
-      - name: Upload Docker image tar file as artifact
-        uses: actions/upload-artifact@v4
+      - name: Build image and push to GitHub Packages (Docker Registry)
+        uses: mr-smithers-excellent/docker-build-push@v6
         with:
-          name: myapp-image
-          path: myapp.tar
+            image: ${{ github.event.repository.name }}
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy-to-server:
+  auto-deploy-docker-job:
+    needs: release-docker-image-job
     runs-on: ubuntu-latest
-    needs: build-and-save-docker-image
+    env:
+      CONTAINER_NAME: 'my-html-container'
+      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.ref_name }}'
     steps:
-      - name: Download Docker image tar file
-        uses: actions/download-artifact@v4
-        with:
-          name: myapp-image
+    - name: Executing remote SSH commands using password
+      uses: JimCronqvist/action-ssh@master
+      with:
+        host: 'superuser@103.91.190.205'  
+        privateKey: ${{ secrets.MY_PRIVATE_KEY}}
+        port: '22'
+        script: |
+          docker logout ghcr.io
+          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}
+          docker rm -f ${{ env.CONTAINER_NAME }} || true
+          docker pull ${{ env.DOCKER_IMAGE_URL }}
+          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 8080:80 ${{ env.DOCKER_IMAGE_URL }}
 
-      - name: Copy Docker image to server
-        run: |
-          scp -i ${{ secrets.SSH_PRIVATE_KEY }} myapp.tar superuser@103.91.190.205:C:\Users\mint0
-
-      - name: Deploy Docker image on server
-        run: |
-          ssh -i ${{ secrets.SSH_PRIVATE_KEY }} superuser@103.91.190.205 << 'EOF'
-          docker load -i C:\Users\mint0\myapp.tar
-          docker rm -f myapp_container || true
-          docker run --restart=always -d --name myapp_container -p 80:3000 myapp:latest
-          EOF

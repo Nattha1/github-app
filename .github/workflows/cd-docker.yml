@@ -1,4 +1,4 @@
-name: 'deploy to docker'
+name: 'deploy to docker-v.1'
   
 on:
   push:
@@ -19,23 +19,26 @@ jobs:
             username: ${{ github.actor }}
             password: ${{ secrets.GITHUB_TOKEN }}
 
+
   auto-deploy-docker-job:
     needs: release-docker-image-job
     runs-on: ubuntu-latest
     env:
-      CONTAINER_NAME: 'my-html-container'
-      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.ref_name }}'
+      CONTAINER_NAME: 'akenarin2-vue-app'
+      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{  github.ref_name }}'
     steps:
-    - name: Executing remote SSH commands using password
-      uses: JimCronqvist/action-ssh@master
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.0
       with:
-        host: 'superuser@103.91.190.205'  
-        privateKey: ${{ secrets.MY_PRIVATE_KEY}}
+        host: '103.91.190.205'  #production url: 159.223.41.181:9003
+        username: 'superuser'
+        password: 'Natthaphon@MUC'
         port: '22'
         script: |
           docker logout ghcr.io
           docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}
           docker rm -f ${{ env.CONTAINER_NAME }} || true
           docker pull ${{ env.DOCKER_IMAGE_URL }}
-          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 8080:80 ${{ env.DOCKER_IMAGE_URL }}
+          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9076:80 ${{ env.DOCKER_IMAGE_URL }}
+
 
