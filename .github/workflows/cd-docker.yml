@@ -28,7 +28,7 @@ jobs:
       DOCKER_IMAGE_URL: 'ghcr.io/nattha1/github-app:${{ github.sha }}'
     steps:
     - name: Execute SSH commands on remote server
-      uses: appleboy/ssh-action@v1.0.0
+      uses: JimCronqvist/action-ssh@master
       with:
         host: 'superuser@123.253.62.249'  # replace with your server's IP or hostname
         privateKey: ${{ secrets.MY_PRIVATE_KEY }}
