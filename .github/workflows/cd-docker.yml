@@ -13,19 +13,19 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }} .
+          docker build -t ghcr.io/nattha1/github-app:${{ github.sha }} .
 
       - name: Push Docker image to GitHub Packages
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }}
+          docker push ghcr.io/nattha1/github-app:${{ github.sha }}
 
   auto-deploy-docker-job:
     needs: release-docker-image-job
     runs-on: self-hosted
     env:
       CONTAINER_NAME: 'my-web'
-      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }}'
+      DOCKER_IMAGE_URL: 'ghcr.io/nattha1/github-app:${{ github.sha }}'
     steps:
     - name: Execute SSH commands on remote server
       uses: appleboy/ssh-action@v1.0.0
