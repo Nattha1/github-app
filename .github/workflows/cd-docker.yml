@@ -7,7 +7,7 @@ on:
 
 jobs:
   release-docker-image-job:
-    runs-on: self-hosted  # Ensure that this runner is on your local machine with Docker Desktop
+    runs-on: self-hosted 
     steps:
       - uses: actions/checkout@v4
 
