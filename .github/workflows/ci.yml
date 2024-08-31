@@ -26,8 +26,9 @@ jobs:
 
   unit-test-job:
     runs-on: ubuntu-latest
+    needs: lint-job
     stratery: 
-      matrix:
+        matrix:
         on: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
