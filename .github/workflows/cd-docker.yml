@@ -35,10 +35,11 @@ jobs:
         password: 'Natthaphon@MUC'
         port: '22'
         script: |
-          docker logout ghcr.io
-          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}
-          docker rm -f ${{ env.CONTAINER_NAME }} || true
-          docker pull ${{ env.DOCKER_IMAGE_URL }}
-          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9076:80 ${{ env.DOCKER_IMAGE_URL }}
+          echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker logout ghcr.io
+          echo ${{ secrets.GITHUB_TOKEN }} | sudo -S docker login -u ${{ github.actor }} --password-stdin ghcr.io
+          sudo docker rm -f my-web || true
+          sudo docker pull ghcr.io/nattha1/github-app:main
+          sudo docker run --restart=always -d --name my-web -p 9076:80 ghcr.io/nattha1/github-app:main
+
 
 
