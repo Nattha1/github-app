@@ -7,36 +7,34 @@ on:
 
 jobs:
   release-docker-image-job:
-    runs-on: self-hosted
+    runs-on: self-hosted  # Ensure that this runner is on your local machine with Docker Desktop
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build image and push to GitHub Packages (Docker Registry)
-        uses: mr-smithers-excellent/docker-build-push@v6
-        with:
-            image: ${{ github.event.repository.name }}
-            registry: ghcr.io
-            username: ${{ github.actor }}
-            password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }} .
 
+      - name: Push Docker image to GitHub Packages
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }}
 
   auto-deploy-docker-job:
     needs: release-docker-image-job
     runs-on: self-hosted
     env:
       CONTAINER_NAME: 'my-web'
-      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{  github.ref_name }}'
+      DOCKER_IMAGE_URL: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ github.sha }}'
     steps:
-    - name: Execute SSH commmands on remote server
-      uses: JimCronqvist/action-ssh@master
+    - name: Execute SSH commands on remote server
+      uses: appleboy/ssh-action@v1.0.0
       with:
-        host: 'superuser@123.253.62.249'  
-        privateKey: ${{ secrets.MY_PRIVATE_KEY}}
+        host: 'superuser@123.253.62.249'  # replace with your server's IP or hostname
+        privateKey: ${{ secrets.MY_PRIVATE_KEY }}
         command: |
           docker logout ghcr.io
-          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}  ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}
-          docker rm -f ${{ env.CONTAINER_NAME }}
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker rm -f ${{ env.CONTAINER_NAME }} || true
           docker pull ${{ env.DOCKER_IMAGE_URL }}
           docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9002:3000 ${{ env.DOCKER_IMAGE_URL }}
-
-
