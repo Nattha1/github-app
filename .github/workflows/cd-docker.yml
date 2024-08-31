@@ -7,7 +7,7 @@ on:
 
 jobs:
   release-docker-image-job:
-    runs-on: self-hosted 
+    runs-on: self-hosted  # Ensure that this runner is on your local machine with Docker Desktop
     steps:
       - uses: actions/checkout@v4
 
@@ -27,15 +27,14 @@ jobs:
       CONTAINER_NAME: 'my-web'
       DOCKER_IMAGE_URL: 'ghcr.io/nattha1/github-app:${{ github.sha }}'
     steps:
-      - name: Execute SSH commands on remote server
+    - name: Execute SSH commands on remote server
       uses: appleboy/ssh-action@v1.0.0
       with:
-        host: 'superuser@123.253.62.249'
+        host: 'superuser@123.253.62.249'  # replace with your server's IP or hostname
         privateKey: ${{ secrets.MY_PRIVATE_KEY }}
         command: |
           docker logout ghcr.io
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker rm -f my-web || true
-          docker pull ghcr.io/nattha1/github-app:latest
-          docker run --restart=always -d --name my-web -p 9002:3000 ghcr.io/nattha1/github-app:latest
-    
+          docker rm -f ${{ env.CONTAINER_NAME }} || true
+          docker pull ${{ env.DOCKER_IMAGE_URL }}
+          docker run --restart=always -d --name ${{ env.CONTAINER_NAME }} -p 9002:3000 ${{ env.DOCKER_IMAGE_URL }}
